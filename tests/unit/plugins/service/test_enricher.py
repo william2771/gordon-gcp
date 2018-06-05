@@ -49,14 +49,14 @@ def config(fake_keyfile):
 def test_implements_interface(config):
     """GCEEnricher implements IEnricherClient"""
     success, error = asyncio.Queue(), asyncio.Queue()
-    client = enricher.GCEEnricher(config, None, success, error)
+    plugin = enricher.GCEEnricher(config, None, success, error)
 
-    assert interfaces.IEnricherClient.providedBy(client)
+    assert interfaces.IEnricherClient.providedBy(plugin)
     assert interfaces.IEnricherClient.implementedBy(enricher.GCEEnricher)
-    assert config is client.config
-    assert success is client.success_channel
-    assert error is client.error_channel
-    assert 'enrich' == client.phase
+    assert config is plugin.config
+    assert success is plugin.success_channel
+    assert error is plugin.error_channel
+    assert 'enrich' == plugin.phase
 
 
 @pytest.fixture

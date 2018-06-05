@@ -19,7 +19,7 @@ Module to compare desired record sets produced from a Resource Authority
 record sets from Google Cloud DNS, then publish corrective messages to
 the internal ``changes_channel`` if there are differences.
 
-This client makes use of the asynchronous DNS client as defined in
+This plugin makes use of the asynchronous DNS client as defined in
 :class:`.GDNSClient`, and therefore must use service account/JWT
 authentication (for now).
 
@@ -27,7 +27,7 @@ See :doc:`config-janitor` for the required Google DNS configuration.
 
 .. attention::
 
-    This reconciler client is an internal module for the core janitor
+    This reconciler plugin is an internal module for the core janitor
     logic. No other use cases are expected.
 
 To use:
@@ -125,12 +125,12 @@ class GDNSReconciler:
     """Validate current records in DNS against desired source of truth.
 
     :class:`.GDNSReconciler` will create a change message for the
-    configured publisher client plugin to consume if there is a
+    configured Publisher plugin to consume if there is a
     discrepancy between records in Google Cloud DNS and the desired
     state.
 
     Once validation is done, the Reconciler will emit a ``None`` message
-    to the ``changes_channel`` queue, signalling a Publisher client
+    to the ``changes_channel`` queue, signalling a Publisher plugin
     (e.g. :class:`.GPubsubPublisher`) to publish the
     message to a pub/sub to which `Gordon <https://github.com/spotify/
     gordon>`_ subscribes.

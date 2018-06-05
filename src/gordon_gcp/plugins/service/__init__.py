@@ -31,12 +31,12 @@ __all__ = (
 
 
 def get_event_consumer(config, success_channel, error_channel, **kwargs):
-    """Get a GPSEventConsumer client.
+    """Get a GPSEventConsumer instance.
 
     A factory function that validates configuration, creates schema
     validator and parser clients, creates an auth and a pubsub client,
-    and returns an event consumer (:interface:`gordon.interfaces.
-    IEventConsumerClient`) provider.
+    and returns a GPSEventConsumer instance (which is a provider of the
+    :interface:`gordon.interfaces.IEventConsumerClient` interface).
 
     Args:
         config (dict): Google Cloud Pub/Sub-related configuration.
@@ -57,11 +57,11 @@ def get_event_consumer(config, success_channel, error_channel, **kwargs):
 
 
 def get_enricher(config, success_channel, error_channel, **kwargs):
-    """Get a GCEEnricher client.
+    """Get a GCEEnricher instance.
 
-    A factory function that validates configuration and returns an
-    enricher client (:interface:`gordon.interfaces.IEnricherClient`)
-    provider.
+    A factory function that validates configuration and returns a GCEEnricher
+    instance (which is a provider of the
+    `interface:`gordon.interfaces.IEnricherClient` interface).
 
     Args:
         config (dict): Google Compute Engine API related configuration.

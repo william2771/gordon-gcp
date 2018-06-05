@@ -71,10 +71,11 @@ def exp_sub(consumer_config):
      'projects/test-example/subscriptions/a-subscription'),
     (False, False, 'projects/test-example/topics/a-topic', 'a-subscription'),
 ])
-def test_get_event_consumer(local, provide_loop, topic, sub, consumer_config,
-                            exp_topic, auth_client, exp_sub, subscriber_client,
-                            emulator, monkeypatch, event_loop):
-    """Happy path to initialize an Event Consumer client."""
+def test_get_event_consumer_WARNING_EXPECTED(
+        local, provide_loop, topic, sub, consumer_config, exp_topic,
+        auth_client, exp_sub, subscriber_client, emulator, monkeypatch,
+        event_loop):
+    """Happy path to initialize an Event Consumer plugin."""
     success_chnl, error_chnl = asyncio.Queue(), asyncio.Queue()
 
     if local:
@@ -88,7 +89,7 @@ def test_get_event_consumer(local, provide_loop, topic, sub, consumer_config,
     }
     if provide_loop:
         kwargs['loop'] = event_loop
-    client = service.get_event_consumer(**kwargs)
+    plugin = service.get_event_consumer(**kwargs)
 
     creds = None
     if not local:
@@ -97,28 +98,28 @@ def test_get_event_consumer(local, provide_loop, topic, sub, consumer_config,
     sub_inst = subscriber_client.return_value
     sub_inst.create_subscription.assert_called_once_with(exp_sub, exp_topic)
 
-    assert client._validator
-    assert client._parser
-    assert client.success_channel is success_chnl
-    assert client.error_channel is error_chnl
+    assert plugin._validator
+    assert plugin._parser
+    assert plugin.success_channel is success_chnl
+    assert plugin.error_channel is error_chnl
 
-    assert client._subscriber
-    assert exp_sub == client._subscription
+    assert plugin._subscriber
+    assert exp_sub == plugin._subscription
 
-    assert ['audit-log', 'event'] == sorted(client._message_schemas)
+    assert ['audit-log', 'event'] == sorted(plugin._message_schemas)
 
     if provide_loop:
-        assert event_loop is client._loop
+        assert event_loop is plugin._loop
     else:
-        assert event_loop is not client._loop
+        assert event_loop is not plugin._loop
 
 
 @pytest.mark.parametrize('config_key,exp_msg',  [
     ('keyfile', 'The path to a Service Account JSON keyfile is required '),
     ('project', 'The GCP project where Cloud Pub/Sub is located is required.'),
-    ('topic', ('A topic for the client to subscribe to in Cloud Pub/Sub is '
+    ('topic', ('A topic for the plugin to subscribe to in Cloud Pub/Sub is '
                'required.')),
-    ('subscription', ('A subscription for the client to pull messages from in '
+    ('subscription', ('A subscription for the plugin to pull messages from in '
                       'Cloud Pub/Sub is required.')),
 ])
 def test_get_event_consumer_config_raises(config_key, exp_msg, consumer_config,
@@ -130,9 +131,9 @@ def test_get_event_consumer_config_raises(config_key, exp_msg, consumer_config,
     consumer_config.pop(config_key)
 
     with pytest.raises(exceptions.GCPConfigError) as e:
-        client = service.get_event_consumer(consumer_config, success_chnl,
+        plugin = service.get_event_consumer(consumer_config, success_chnl,
                                             error_chnl)
-        client._subscriber.create_subscription.assert_not_called()
+        plugin._subscriber.create_subscription.assert_not_called()
 
     e.match('Invalid configuration:\n' + exp_msg)
     assert 1 == len(caplog.records)
@@ -184,10 +185,10 @@ def test_get_event_consumer_sub_exists(consumer_config, auth_client,
     sub_inst = subscriber_client.return_value
     sub_inst.create_subscription.side_effect = [exp]
 
-    client = service.get_event_consumer(consumer_config, success_chnl,
+    plugin = service.get_event_consumer(consumer_config, success_chnl,
                                         error_chnl)
 
-    assert client._subscriber
+    assert plugin._subscriber
 
     sub_inst.create_subscription.assert_called_once_with(exp_sub, exp_topic)
 
@@ -205,20 +206,20 @@ def enricher_config(fake_keyfile):
     (10, 10)])
 def test_get_enricher(mocker, enricher_config, auth_client, conf_retries,
                       retries):
-    """Happy path to initialize an Enricher client."""
+    """Happy path to initialize an Enricher plugin."""
     mocker.patch('gordon_gcp.plugins.service.enricher.http.AIOConnection')
     enricher_config['retries'] = conf_retries
 
     success_chnl, error_chnl = asyncio.Queue(), asyncio.Queue()
 
-    client = service.get_enricher(enricher_config, success_chnl, error_chnl)
+    plugin = service.get_enricher(enricher_config, success_chnl, error_chnl)
 
-    assert isinstance(client, service.enricher.GCEEnricher)
-    assert client.config
-    assert retries == client.config['retries']
-    assert client.success_channel
-    assert client.error_channel
-    assert client._http_client
+    assert isinstance(plugin, service.enricher.GCEEnricher)
+    assert plugin.config
+    assert retries == plugin.config['retries']
+    assert plugin.success_channel
+    assert plugin.error_channel
+    assert plugin._http_client
 
 
 @pytest.mark.parametrize('config_key,exc_msg', [

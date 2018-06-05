@@ -14,19 +14,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Client module to publish any required DNS changes initiated from
+Plugin module to publish any required DNS changes initiated from
 :class:`.GDNSReconciler` to `Google Cloud Pub/Sub <https://cloud.
 google.com/pubsub/docs/overview>`_. The consumer of these messages is
 the `Gordon service <https://github.com/spotify/gordon>`_.
 
-This client wraps around `google-cloud-pubsub <https://pypi.python.org
+This plugin wraps around `google-cloud-pubsub <https://pypi.python.org
 /pypi/google-cloud-pubsub>`_ using `grpc <https://github.com/googleapis/
 googleapis/blob/master/google/pubsub/v1/pubsub.proto>`_ rather than
 inheriting from :class:`.AIOConnection`.
 
 .. attention::
 
-    This publisher client is an internal module for the core janitor
+    This publisher plugin is an internal module for the core janitor
     logic. No other use cases are expected.
 
 
@@ -100,7 +100,7 @@ class GPubsubPublisherBuilder:
             logging.error(msg)
             raise exceptions.GCPConfigError(msg)
         if not self.config.get('topic'):
-            msg = ('A topic for the client to publish to in Cloud Pub/Sub is '
+            msg = ('A topic for the plugin to publish to in Cloud Pub/Sub is '
                    'required.')
             logging.error(msg)
             raise exceptions.GCPConfigError(msg)
@@ -153,7 +153,7 @@ class GPubsubPublisherBuilder:
 
 @zope.interface.implementer(interfaces.IPublisher)
 class GPubsubPublisher:
-    """Client to publish change messages to Google Pub/Sub.
+    """Plugin to publish change messages to Google Pub/Sub.
 
     Args:
         config (dict): Google Cloud Pub/Sub-related configuration.

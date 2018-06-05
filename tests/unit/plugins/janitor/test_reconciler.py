@@ -80,17 +80,17 @@ def test_reconciler_default(timeout, exp_timeout, config, dns_client):
     if timeout:
         config['cleanup_timeout'] = timeout
 
-    recon_client = reconciler.GDNSReconciler(
+    recon_plugin = reconciler.GDNSReconciler(
         config, dns_client, rrset_chnl, changes_chnl)
-    assert exp_timeout == recon_client.cleanup_timeout
-    assert recon_client.dns_client is not None
+    assert exp_timeout == recon_plugin.cleanup_timeout
+    assert recon_plugin.dns_client is not None
 
 
 @pytest.fixture
-async def recon_client(config, dns_client):
+async def recon_plugin(config, dns_client):
     rch, chch = asyncio.Queue(), asyncio.Queue()
-    recon_client = reconciler.GDNSReconciler(config, dns_client, rch, chch)
-    yield recon_client
+    recon_plugin = reconciler.GDNSReconciler(config, dns_client, rch, chch)
+    yield recon_plugin
     while not chch.empty():
         await chch.get()
 
@@ -106,10 +106,10 @@ params = [
 
 @pytest.mark.parametrize(args, params)
 @pytest.mark.asyncio
-async def test_cleanup(exp_log_records, timeout, recon_client, caplog, mocker,
+async def test_cleanup(exp_log_records, timeout, recon_plugin, caplog, mocker,
                        monkeypatch):
     """Proper cleanup with or without pending tasks."""
-    recon_client.cleanup_timeout = timeout
+    recon_plugin.cleanup_timeout = timeout
 
     # mocked methods names must match those in reconciler._ASYNC_METHODS
     async def publish_change_messages():
@@ -131,7 +131,7 @@ async def test_cleanup(exp_log_records, timeout, recon_client, caplog, mocker,
     monkeypatch.setattr(
         'gordon_gcp.plugins.janitor.reconciler.asyncio.Task', mock_task)
 
-    await recon_client.cleanup()
+    await recon_plugin.cleanup()
 
     assert exp_log_records == len(caplog.records)
     if exp_log_records == 2:
@@ -142,24 +142,24 @@ async def test_cleanup(exp_log_records, timeout, recon_client, caplog, mocker,
         assert coro1.done()
         assert coro2.done()
 
-    assert 1 == recon_client.changes_channel.qsize()
+    assert 1 == recon_plugin.changes_channel.qsize()
 
 
 @pytest.mark.asyncio
-async def test_publish_change_messages(recon_client, fake_response_data,
+async def test_publish_change_messages(recon_plugin, fake_response_data,
                                        caplog):
     """Publish message to changes queue."""
     rrsets = fake_response_data['rrsets']
     desired_rrsets = [gdns.GCPResourceRecordSet(**kw) for kw in rrsets]
 
-    await recon_client.publish_change_messages(desired_rrsets)
+    await recon_plugin.publish_change_messages(desired_rrsets)
 
-    assert 3 == recon_client.changes_channel.qsize()
+    assert 3 == recon_plugin.changes_channel.qsize()
     assert 4 == len(caplog.records)
 
 
 @pytest.mark.asyncio
-async def test_validate_rrsets_by_zone(recon_client, fake_response_data, caplog,
+async def test_validate_rrsets_by_zone(recon_plugin, fake_response_data, caplog,
                                        monkeypatch):
     """A difference is detected and a change message is published."""
     rrsets = fake_response_data['rrsets']
@@ -176,13 +176,13 @@ async def test_validate_rrsets_by_zone(recon_client, fake_response_data, caplog,
         ]
 
     monkeypatch.setattr(
-        recon_client.dns_client, 'get_records_for_zone',
+        recon_plugin.dns_client, 'get_records_for_zone',
         mock_get_records_for_zone
     )
 
-    await recon_client.validate_rrsets_by_zone('example.net.', rrsets)
+    await recon_plugin.validate_rrsets_by_zone('example.net.', rrsets)
 
-    assert 1 == recon_client.changes_channel.qsize()
+    assert 1 == recon_plugin.changes_channel.qsize()
     assert 3 == len(caplog.records)
     assert 1 == mock_get_records_for_zone_called
 
@@ -200,7 +200,7 @@ params = [
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(args, params)
-async def test_run(msg, exp_log_records, exp_mock_calls, caplog, recon_client,
+async def test_run(msg, exp_log_records, exp_mock_calls, caplog, recon_plugin,
                    monkeypatch):
     """Start reconciler & continue if certain errors are raised."""
     mock_validate_rrsets_by_zone_called = 0
@@ -211,12 +211,12 @@ async def test_run(msg, exp_log_records, exp_mock_calls, caplog, recon_client,
         await asyncio.sleep(0)
 
     monkeypatch.setattr(
-        recon_client, 'validate_rrsets_by_zone', mock_validate_rrsets_by_zone)
+        recon_plugin, 'validate_rrsets_by_zone', mock_validate_rrsets_by_zone)
 
-    await recon_client.rrset_channel.put(msg)
-    await recon_client.rrset_channel.put(None)
+    await recon_plugin.rrset_channel.put(msg)
+    await recon_plugin.rrset_channel.put(None)
 
-    await recon_client.run()
+    await recon_plugin.run()
 
     assert exp_log_records == len(caplog.records)
     assert exp_mock_calls == mock_validate_rrsets_by_zone_called

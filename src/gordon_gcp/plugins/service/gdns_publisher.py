@@ -15,14 +15,14 @@
 # limitations under the License.
 
 """
-Client module to publish DNS records from an event message. Once an event
+Plugin module to publish DNS records from an event message. Once an event
 message is done (either successfully published, or met with errors along the
 way), it will placed into the appropriate channel, either the
 `success_channel`` or ``error_channel`` to be further handled by the ``gordon``
 core system.
 
 .. attention::
-    The publisher client is an internal module for the core gordon logic. No
+    The publisher plugin is an internal module for the core gordon logic. No
     other use cases are expected.
 """
 

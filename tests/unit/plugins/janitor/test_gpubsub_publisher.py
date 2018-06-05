@@ -58,18 +58,18 @@ async def test_cleanup(exp_log_records, timeout, side_effect, kwargs,
         mock_msg2.done.side_effect = side_effect
 
     kwargs['config']['cleanup_timeout'] = timeout
-    client = gpubsub_publisher.GPubsubPublisher(**kwargs)
-    client._messages.add(mock_msg1)
-    client._messages.add(mock_msg2)
+    plugin = gpubsub_publisher.GPubsubPublisher(**kwargs)
+    plugin._messages.add(mock_msg1)
+    plugin._messages.add(mock_msg2)
 
-    await client.cleanup()
+    await plugin.cleanup()
 
     assert exp_log_records == len(caplog.records)
     if exp_log_records == 2:
         mock_msg1.cancel.assert_called_once()
         mock_msg2.cancel.assert_called_once()
 
-    assert 0 == client.changes_channel.qsize()
+    assert 0 == plugin.changes_channel.qsize()
 
 
 @pytest.mark.asyncio
@@ -83,18 +83,18 @@ async def test_publish(kwargs, gpubsub_publisher_client, auth_client, mocker,
     exp_topic = f'projects/{project}/topics/{topic}'
     kwargs['config']['topic'] = exp_topic
 
-    client = gpubsub_publisher.GPubsubPublisher(**kwargs)
+    plugin = gpubsub_publisher.GPubsubPublisher(**kwargs)
 
     msg1 = {'message': 'one'}
 
-    await client.publish(msg1)
+    await plugin.publish(msg1)
 
     msg1['timestamp'] = datetime.datetime.utcnow().isoformat()
     bytes_msg1 = bytes(json.dumps(msg1), encoding='utf-8')
 
     gpubsub_publisher_client.publish.assert_called_once_with(
         exp_topic, bytes_msg1)
-    assert 1 == len(client._messages)
+    assert 1 == len(plugin._messages)
 
 
 @pytest.mark.parametrize('raises,exp_log_records', [
@@ -114,8 +114,8 @@ async def test_run(raises, exp_log_records, kwargs, gpubsub_publisher_client,
     await kwargs['changes_channel'].put(msg1)
     await kwargs['changes_channel'].put(None)
 
-    client = gpubsub_publisher.GPubsubPublisher(**kwargs)
-    await client.run()
+    plugin = gpubsub_publisher.GPubsubPublisher(**kwargs)
+    await plugin.run()
 
     gpubsub_publisher_client.publish.assert_called_once()
     assert exp_log_records == len(caplog.records)

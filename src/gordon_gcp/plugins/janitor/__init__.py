@@ -32,18 +32,19 @@ __all__ = (
 
 
 def get_gpubsub_publisher(config, changes_channel, **kw):
-    """Get a GPubsubPublisher client.
+    """Get a GPubsubPublisher instance.
 
     A factory function that validates configuration, creates an auth
-    and pubsub API client, and returns a Google Pub/Sub Publisher
-    provider.
+    and pubsub API client, and returns a GPubsubPublisher
+    instance (which is a provider of the
+    :interface:`gordon.interfaces.IPublisher` interface).
 
     Args:
         config (dict): Google Cloud Pub/Sub-related configuration.
         changes_channel (asyncio.Queue): queue to publish message to
             make corrections to Cloud DNS.
         kw (dict): Additional keyword arguments to pass to the
-            Publisher.
+            GPubsubPublisher.
     Returns:
         A :class:`GPubsubPublisher` instance.
     """
@@ -53,11 +54,12 @@ def get_gpubsub_publisher(config, changes_channel, **kw):
 
 
 def get_reconciler(config, rrset_channel, changes_channel, **kw):
-    """Get a GDNSReconciler client.
+    """Get a GDNSReconciler instance.
 
     A factory function that validates configuration, creates an auth
     and :class:`GDNSClient` instance, and returns a GDNSReconciler
-    provider.
+    instance (which is a provider of the
+    :interface:`gordon.interfaces.IReconciler` interface).
 
     Args:
         config (dict): Google Cloud Pub/Sub-related configuration.
@@ -66,7 +68,7 @@ def get_reconciler(config, rrset_channel, changes_channel, **kw):
         changes_channel (asyncio.Queue): queue to publish message to
             make corrections to Cloud DNS.
         kw (dict): Additional keyword arguments to pass to the
-            Reconciler.
+            GDNSReconciler.
     Returns:
         A :class:`GDNSReconciler` instance.
     """
@@ -76,17 +78,18 @@ def get_reconciler(config, rrset_channel, changes_channel, **kw):
 
 
 def get_authority(config, rrset_channel, **kwargs):
-    """Get a GCEAuthority client.
+    """Get a GCEAuthority instance.
 
     A factory function that validates configuration and creates a
-    proper GCEAuthority.
+    GCEAuthority instance (which is a provider of the
+    :interface:`gordon.interfaces.IAuthority` interface).
 
     Args:
         config (dict): GCEAuthority related configuration.
         rrset_channel (asyncio.Queue): queue used for sending messages
             to the reconciler plugin.
         kw (dict): Additional keyword arguments to pass to the
-            Authority.
+            GCEAuthority.
     Returns:
         A :class:`GCEAuthority` instance.
     """

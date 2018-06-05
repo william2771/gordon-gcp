@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Client module to enrich an event message with any missing information
+Plugin module to enrich an event message with any missing information
 (such as IP addresses to a new hostname) and to generate the desired
 record(s) (e.g. ``A`` or ``CNAME`` records). Once an event message is
 done (either successfully enriched or met with errors along the way),
@@ -23,7 +23,7 @@ it will be placed into the appropriate channel, either the
 ``gordon`` core system.
 
 .. attention::
-    The enricher client is an internal module for the core gordon
+    The enricher plugin is an internal module for the core gordon
     logic. No other use cases are expected.
 
 """

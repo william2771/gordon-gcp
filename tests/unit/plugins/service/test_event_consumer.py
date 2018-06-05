@@ -144,21 +144,21 @@ def test_event_consumer_default(subscriber_client, validator, parser,
     """GPSEventConsumer implements IEventConsumerClient"""
     config = {'subscription': '/projects/test-project/subscriptions/test-sub'}
     success, error = channel_pair
-    client = event_consumer.GPSEventConsumer(
+    plugin = event_consumer.GPSEventConsumer(
         config, subscriber_client, validator, parser, success, error,
         event_loop)
 
-    assert interfaces.IEventConsumerClient.providedBy(client)
+    assert interfaces.IEventConsumerClient.providedBy(plugin)
     assert interfaces.IEventConsumerClient.implementedBy(
         event_consumer.GPSEventConsumer)
-    assert subscriber_client is client._subscriber
-    assert config['subscription'] is client._subscription
-    assert validator is client._validator
-    assert ['schema1', 'schema2'] == list(client._message_schemas)
-    assert success is client.success_channel
-    assert error is client.error_channel
-    assert 'consume' == client.phase
-    assert event_loop is client._loop
+    assert subscriber_client is plugin._subscriber
+    assert config['subscription'] is plugin._subscription
+    assert validator is plugin._validator
+    assert ['schema1', 'schema2'] == list(plugin._message_schemas)
+    assert success is plugin.success_channel
+    assert error is plugin.error_channel
+    assert 'consume' == plugin.phase
+    assert event_loop is plugin._loop
 
 
 @pytest.fixture
@@ -166,10 +166,10 @@ def consumer(subscriber_client, validator, event_loop, channel_pair):
     config = {'subscription': '/projects/test-project/subscriptions/test-sub'}
     success, error = channel_pair
     parser = parse.MessageParser()
-    client = event_consumer.GPSEventConsumer(
+    plugin = event_consumer.GPSEventConsumer(
         config, subscriber_client, validator, parser, success, error,
         event_loop)
-    return client
+    return plugin
 
 
 @pytest.mark.asyncio
