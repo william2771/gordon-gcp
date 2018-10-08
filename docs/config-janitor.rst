@@ -47,11 +47,16 @@ Any configuration key/value listed here may also be used in the specific plugin 
 
     `Optional`: Timeout in seconds for how long each plugin should wait for outstanding tasks (e.g. processing remaining message from a channel) before cancelling. This is only used when a plugin has received all messages from a channel, but may have work outstanding. Defaults to ``60``.
 
+.. option:: default_zone_prefix="STR"
+
+    `Optional`: Prefix associated with Google managed zone names, prepended with a '-' to the generated name.
+
 
 gcp.gdns
 ~~~~~~~~
 
 All configuration options above in the general ``[gcp]`` may be used here. There are no specific DNS-related configuration options.
+
 
 gcp.gpubsub
 ~~~~~~~~~~~
