@@ -102,10 +102,12 @@ async def test_run_publishes_msg_to_channel(mocker, authority_config,
                                             get_gce_client, create_mock_coro,
                                             instance_data, metrics):
     instances = []
-    for i in range(1, 4):
+    for i in range(1, 5):
         inst = copy.deepcopy(instance_data)
         inst['name'] = f'host-{i}'
         inst['networkInterfaces'][0]['accessConfigs'][0]['natIp'] = f'1.1.1.{i}'
+        if i == 4:
+            inst['status'] = 'TERMINATED'
         instances.append(inst)
 
     active_projects_mock, active_projects_coro = create_mock_coro()
@@ -126,6 +128,8 @@ async def test_run_publishes_msg_to_channel(mocker, authority_config,
 
     _expected_rrsets = []
     for instance in instances:
+        if instance['status'] == 'TERMINATED':
+            continue
         ip = instance['networkInterfaces'][0]['accessConfigs'][0]['natIP']
         _expected_rrsets.append({
             'name': f"{instance['name']}.{authority_config['dns_zone']}",
@@ -232,3 +236,11 @@ def test_create_msgs_bad_json(caplog, fake_authority):
     results = fake_authority._create_msgs([partial_instance])
     assert [] == results
     assert 1 == len(caplog.records)
+
+
+# test_get_instances_terminated(mocker, authority_config, metrics,
+# get_gce_client,
+#     crm_client = get_gce_client(gcrm.GCRMClient)
+#     gce_authority = authority.GCEAuthority(
+#         authority_config, metrics, crm_client, gce_client, mock_rrset_channel)
+# config, metrics, crm_client, gce_client)
